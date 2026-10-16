@@ -143,6 +143,14 @@ body.theme-contrast svg:not(.brand-logo-svg) line {
   fill: #000000 !important;
 }
 
+/* Imagem da logo oficial em alto contraste com fundo branco limpo e borda visível */
+body.theme-contrast .brand-logo-img {
+  background-color: #ffffff !important;
+  border: 2px solid #ffff00 !important;
+  border-radius: 0.75rem !important;
+  padding: 0.2rem !important;
+}
+
 /* Campos de entrada e caixas de texto com fundo preto, borda amarela e texto preto com contorno amarelo */
 body.theme-contrast input,
 body.theme-contrast textarea,

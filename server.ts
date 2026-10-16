@@ -17,6 +17,7 @@ const PORT = Number(process.env.PORT) || 3000;
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
 
 export interface AuthenticatedRequest extends Request {
   user?: DbUser;
@@ -1490,6 +1491,9 @@ app.get('/api/places/search', async (req: Request, res: Response) => {
     return res.status(500).json({ error: err.message, places: [] });
   }
 });
+
+// Serve public assets (e.g. viva-logo.png) directly
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Start server
 async function startServer() {
