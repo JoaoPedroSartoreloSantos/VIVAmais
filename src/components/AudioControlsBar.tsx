@@ -52,7 +52,11 @@ export const AudioControlsBar: React.FC<AudioControlsBarProps> = ({
         {/* Mute toggle button */}
         <button
           type="button"
-          onClick={toggleMute}
+          data-no-speech="true"
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleMute();
+          }}
           className={`p-2 rounded-xl transition flex items-center justify-center min-h-[38px] min-w-[38px] cursor-pointer focus:outline-none focus:ring-2 focus:ring-sky-500 ${
             isMuted
               ? 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700'
@@ -68,7 +72,11 @@ export const AudioControlsBar: React.FC<AudioControlsBarProps> = ({
         {/* Volume controls */}
         <button
           type="button"
-          onClick={() => decreaseVolume(10)}
+          data-no-speech="true"
+          onClick={(e) => {
+            e.stopPropagation();
+            decreaseVolume(10);
+          }}
           disabled={volume <= 0}
           className="p-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-40 transition cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-sky-500"
           aria-label="Diminuir volume da voz em 10%"
@@ -87,7 +95,11 @@ export const AudioControlsBar: React.FC<AudioControlsBarProps> = ({
 
         <button
           type="button"
-          onClick={() => increaseVolume(10)}
+          data-no-speech="true"
+          onClick={(e) => {
+            e.stopPropagation();
+            increaseVolume(10);
+          }}
           disabled={volume >= 100}
           className="p-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-40 transition cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-sky-500"
           aria-label="Aumentar volume da voz em 10%"
@@ -100,7 +112,11 @@ export const AudioControlsBar: React.FC<AudioControlsBarProps> = ({
         {isSpeaking && (
           <button
             type="button"
-            onClick={stop}
+            data-no-speech="true"
+            onClick={(e) => {
+              e.stopPropagation();
+              stop();
+            }}
             className="ml-auto px-2.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-black text-xs flex items-center gap-1 transition animate-pulse cursor-pointer shadow-sm focus:outline-none focus:ring-2 focus:ring-red-400"
             aria-label="Parar leitura em voz alta"
             title="Parar áudio"
@@ -177,7 +193,11 @@ export const AudioControlsBar: React.FC<AudioControlsBarProps> = ({
           {isSpeaking ? (
             <button
               type="button"
-              onClick={stop}
+              data-no-speech="true"
+              onClick={(e) => {
+                e.stopPropagation();
+                stop();
+              }}
               className="bg-red-600 hover:bg-red-700 active:scale-95 text-white font-black py-2 px-3.5 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 shadow-md transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-400"
               aria-label="Parar leitura em voz alta imediatamente"
               title="Parar áudio agora"
@@ -188,7 +208,10 @@ export const AudioControlsBar: React.FC<AudioControlsBarProps> = ({
           ) : canPlay && onPlayCurrent ? (
             <button
               type="button"
-              onClick={onPlayCurrent}
+              onClick={(e) => {
+                e.stopPropagation();
+                onPlayCurrent();
+              }}
               className="btn-contrast-solid bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-black py-2 px-3.5 rounded-xl text-xs sm:text-sm flex items-center gap-1.5 shadow-md transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-400"
               aria-label="Iniciar leitura do texto em voz alta"
             >
@@ -200,7 +223,11 @@ export const AudioControlsBar: React.FC<AudioControlsBarProps> = ({
           {/* Mute toggle button */}
           <button
             type="button"
-            onClick={toggleMute}
+            data-no-speech="true"
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleMute();
+            }}
             className={`py-2 px-3 rounded-xl font-black text-xs flex items-center gap-1.5 border transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-sky-500 ${
               isMuted
                 ? 'bg-amber-100 hover:bg-amber-200 dark:bg-amber-950 text-amber-900 dark:text-amber-200 border-amber-400 dark:border-amber-700'
@@ -236,7 +263,11 @@ export const AudioControlsBar: React.FC<AudioControlsBarProps> = ({
             {/* Decrease button (-) */}
             <button
               type="button"
-              onClick={() => decreaseVolume(10)}
+              data-no-speech="true"
+              onClick={(e) => {
+                e.stopPropagation();
+                decreaseVolume(10);
+              }}
               disabled={volume <= 0}
               className="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-750 text-slate-800 dark:text-slate-200 disabled:opacity-40 transition cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center font-black focus:outline-none focus:ring-2 focus:ring-sky-500 shadow-xs"
               aria-label="Diminuir volume da leitura em 10 por cento"
@@ -248,7 +279,11 @@ export const AudioControlsBar: React.FC<AudioControlsBarProps> = ({
             {/* Increase button (+) */}
             <button
               type="button"
-              onClick={() => increaseVolume(10)}
+              data-no-speech="true"
+              onClick={(e) => {
+                e.stopPropagation();
+                increaseVolume(10);
+              }}
               disabled={volume >= 100}
               className="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-750 text-slate-800 dark:text-slate-200 disabled:opacity-40 transition cursor-pointer min-h-[40px] min-w-[40px] flex items-center justify-center font-black focus:outline-none focus:ring-2 focus:ring-sky-500 shadow-xs"
               aria-label="Aumentar volume da leitura em 10 por cento"
@@ -263,6 +298,7 @@ export const AudioControlsBar: React.FC<AudioControlsBarProps> = ({
         <div className="flex-1 w-full flex items-center gap-3 min-w-0">
           <input
             type="range"
+            data-no-speech="true"
             min="0"
             max="100"
             step="5"

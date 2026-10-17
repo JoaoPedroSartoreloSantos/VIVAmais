@@ -17,6 +17,7 @@ import {
   RefreshCw,
   AlertTriangle,
   UserCheck,
+  Square,
 } from 'lucide-react';
 import {
   ActiveTab,
@@ -26,7 +27,7 @@ import {
   TrustedContact,
   AccessibilitySettings,
 } from '../types';
-import { speakText, stopSpeaking } from '../utils/speech';
+import { speakText, stopSpeaking, useAudioPlayer } from '../utils/speech';
 import { getPlaces } from '../utils/placesService';
 import { UniversalVoiceListener } from '../utils/audioRecorder';
 import { generateLocalHealthAssistantResponse } from '../utils/localAssistantEngine';
@@ -76,6 +77,15 @@ export const AskVivaView: React.FC<AskVivaViewProps> = ({
   ]);
   const [inputQuestion, setInputQuestion] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const { isSpeaking: globalIsSpeaking } = useAudioPlayer();
+  const [speakingMessageId, setSpeakingMessageId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!globalIsSpeaking) {
+      setSpeakingMessageId(null);
+    }
+  }, [globalIsSpeaking]);
 
   const [isListening, setIsListening] = useState(false);
   const [isProcessingVoice, setIsProcessingVoice] = useState(false);
@@ -510,11 +520,31 @@ export const AskVivaView: React.FC<AskVivaViewProps> = ({
                       <span>Orientação do VIVA+</span>
                     </div>
                     <button
-                      onClick={() => speakText(msg.speechText || msg.text)}
-                      className="p-1 text-slate-500 hover:text-sky-600 rounded-lg"
-                      aria-label="Ouvir esta resposta"
+                      type="button"
+                      data-no-speech="true"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (speakingMessageId === msg.id && globalIsSpeaking) {
+                          stopSpeaking();
+                          setSpeakingMessageId(null);
+                        } else {
+                          setSpeakingMessageId(msg.id);
+                          speakText(
+                            msg.speechText || msg.text,
+                            () => setSpeakingMessageId(msg.id),
+                            () => setSpeakingMessageId(null)
+                          );
+                        }
+                      }}
+                      className="p-1 text-slate-500 hover:text-sky-600 rounded-lg cursor-pointer"
+                      aria-label={speakingMessageId === msg.id && globalIsSpeaking ? 'Parar leitura desta resposta' : 'Ouvir esta resposta'}
+                      title={speakingMessageId === msg.id && globalIsSpeaking ? 'Parar leitura' : 'Ouvir resposta'}
                     >
-                      <Volume2 className="w-4 h-4" />
+                      {speakingMessageId === msg.id && globalIsSpeaking ? (
+                        <Square className="w-4 h-4 fill-current text-red-500 animate-pulse" />
+                      ) : (
+                        <Volume2 className="w-4 h-4" />
+                      )}
                     </button>
                   </div>
                 )}

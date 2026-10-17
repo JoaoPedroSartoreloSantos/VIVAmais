@@ -151,6 +151,8 @@ if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
 
 export let lastSpokenTime = 0;
 export let lastSpokenText = '';
+export let lastStopTime = 0;
+let speakTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
 export function isSpeechSupported(): boolean {
   return typeof window !== 'undefined' && 'speechSynthesis' in window;
@@ -162,10 +164,25 @@ export function isSpeaking(): boolean {
 }
 
 export function stopSpeaking(): void {
+  lastStopTime = Date.now();
+  if (speakTimeoutId !== null) {
+    clearTimeout(speakTimeoutId);
+    speakTimeoutId = null;
+  }
   if (isSpeechSupported()) {
     try {
+      if (activeUtterance) {
+        activeUtterance.onstart = null;
+        activeUtterance.onend = null;
+        activeUtterance.onerror = null;
+        activeUtterance = null;
+      }
+      if (window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+      }
       window.speechSynthesis.cancel();
-      activeUtterance = null;
+      // Cancel twice to ensure browser audio queue flush
+      window.speechSynthesis.cancel();
     } catch (e) {
       console.warn('Erro ao interromper áudio:', e);
     }
@@ -183,10 +200,35 @@ export function setupGlobalFunctionSpeech(): () => void {
   if (typeof window === 'undefined') return () => {};
 
   const handleClick = (e: MouseEvent) => {
+    // If audio was stopped or silenced recently, completely suppress automatic speech
+    if (Date.now() - lastStopTime < 1200) {
+      return;
+    }
+
     const target = (e.target as HTMLElement | null)?.closest<HTMLElement>(
       'button, a, [role="button"], [data-speech-desc]'
     );
     if (!target) return;
+
+    // Never speak when user is clicking stop buttons, mute buttons, volume controls, or inputs
+    const ariaLabel = target.getAttribute('aria-label') || '';
+    const title = target.getAttribute('title') || '';
+    const text = target.innerText?.trim() || '';
+
+    if (
+      target.closest('[data-no-speech="true"]') ||
+      target.getAttribute('data-no-speech') === 'true' ||
+      ariaLabel.toLowerCase().includes('parar') ||
+      title.toLowerCase().includes('parar') ||
+      text.toLowerCase().includes('parar') ||
+      ariaLabel.toLowerCase().includes('silenciar') ||
+      ariaLabel.toLowerCase().includes('mudo') ||
+      ariaLabel.toLowerCase().includes('volume') ||
+      target.getAttribute('role') === 'slider' ||
+      target.tagName === 'INPUT'
+    ) {
+      return;
+    }
 
     // Skip if an explicit onClick already spoke in the last 700ms
     if (Date.now() - lastSpokenTime < 700) {
@@ -199,19 +241,16 @@ export function setupGlobalFunctionSpeech(): () => void {
       return;
     }
 
-    const ariaLabel = target.getAttribute('aria-label');
     if (ariaLabel && ariaLabel.trim().length > 3) {
       speakText(ariaLabel);
       return;
     }
 
-    const title = target.getAttribute('title');
     if (title && title.trim().length > 3) {
       speakText(title);
       return;
     }
 
-    const text = target.innerText?.trim();
     if (text && text.length > 2 && text.length < 120) {
       speakText(`Opção: ${text}`);
     }
@@ -336,7 +375,12 @@ export function speakText(
     if (window.speechSynthesis.paused) {
       window.speechSynthesis.resume();
     }
-    setTimeout(() => {
+    speakTimeoutId = setTimeout(() => {
+      speakTimeoutId = null;
+      // If audio was cancelled or stopped during the 20ms delay, abort speak()
+      if (activeUtterance !== utterance) {
+        return;
+      }
       try {
         window.speechSynthesis.speak(utterance);
       } catch (err) {

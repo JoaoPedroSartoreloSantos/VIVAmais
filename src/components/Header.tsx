@@ -94,7 +94,11 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="flex items-center gap-1 shrink-0">
         <button
           type="button"
-          onClick={handleReadScreen}
+          data-no-speech="true"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleReadScreen();
+          }}
           className={`px-2.5 py-1.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition shrink-0 min-h-[44px] min-w-[44px] cursor-pointer focus:outline-none focus:ring-2 focus:ring-sky-500 border ${
             isSpeaking
               ? 'bg-red-600 hover:bg-red-700 text-white border-red-500 shadow-md animate-pulse'
@@ -125,7 +129,11 @@ export const Header: React.FC<HeaderProps> = ({
 
         <button
           type="button"
-          onClick={() => setShowAudioControls(!showAudioControls)}
+          data-no-speech="true"
+          onClick={(e) => {
+            e.stopPropagation();
+            setShowAudioControls(!showAudioControls);
+          }}
           className={`p-2 rounded-xl border transition min-h-[44px] min-w-[38px] flex items-center justify-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-sky-500 ${
             showAudioControls
               ? 'bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300 border-sky-400 dark:border-sky-600 shadow-xs'

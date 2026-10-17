@@ -13,10 +13,11 @@ import {
   PhoneCall,
   Info,
   AlertCircle,
+  Square,
 } from 'lucide-react';
 import { NearbyPlace, PlaceCategory } from '../types';
 import { getPlaces, reverseGeocode } from '../utils/placesService';
-import { speakText } from '../utils/speech';
+import { speakText, stopSpeaking, useAudioPlayer } from '../utils/speech';
 
 export const NearMeView: React.FC = () => {
   const [gpsCoords, setGpsCoords] = useState<{
@@ -28,6 +29,14 @@ export const NearMeView: React.FC = () => {
   const [gpsError, setGpsError] = useState<string | null>(null);
   const [isGpsInaccurate, setIsGpsInaccurate] = useState(false);
   const [showLocationExplainer, setShowLocationExplainer] = useState(false);
+  const { isSpeaking: globalIsSpeaking } = useAudioPlayer();
+  const [speakingPlaceId, setSpeakingPlaceId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!globalIsSpeaking) {
+      setSpeakingPlaceId(null);
+    }
+  }, [globalIsSpeaking]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchingText, setIsSearchingText] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<PlaceCategory | 'phones'>('all');
@@ -654,18 +663,38 @@ export const NearMeView: React.FC = () => {
                         )}
                         <button
                           type="button"
-                          onClick={() => {
-                            let text = `${place.name}. Categoria: ${place.categoryLabel}. Endereço: ${place.address}. `;
-                            if (place.formattedDistance) text += `Distância estimada: ${place.formattedDistance}. `;
-                            if (place.openingHours) text += `Horário de funcionamento: ${place.openingHours}. `;
-                            if (place.phone) text += `Telefone: ${place.phone}. `;
-                            speakText(text);
+                          data-no-speech="true"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (speakingPlaceId === place.id && globalIsSpeaking) {
+                              stopSpeaking();
+                              setSpeakingPlaceId(null);
+                            } else {
+                              let text = `${place.name}. Categoria: ${place.categoryLabel}. Endereço: ${place.address}. `;
+                              if (place.formattedDistance) text += `Distância estimada: ${place.formattedDistance}. `;
+                              if (place.openingHours) text += `Horário de funcionamento: ${place.openingHours}. `;
+                              if (place.phone) text += `Telefone: ${place.phone}. `;
+                              setSpeakingPlaceId(place.id);
+                              speakText(
+                                text,
+                                () => setSpeakingPlaceId(place.id),
+                                () => setSpeakingPlaceId(null)
+                              );
+                            }
                           }}
-                          className="p-1.5 text-sky-600 hover:text-sky-800 dark:text-sky-400 rounded-xl"
-                          title="Ouvir informações da unidade"
-                          aria-label={`Ouvir informações de ${place.name}`}
+                          className={`p-1.5 rounded-xl transition cursor-pointer ${
+                            speakingPlaceId === place.id && globalIsSpeaking
+                              ? 'bg-red-600 text-white shadow-sm'
+                              : 'text-sky-600 hover:text-sky-800 dark:text-sky-400'
+                          }`}
+                          title={speakingPlaceId === place.id && globalIsSpeaking ? 'Parar leitura' : 'Ouvir informações da unidade'}
+                          aria-label={speakingPlaceId === place.id && globalIsSpeaking ? `Parar leitura de ${place.name}` : `Ouvir informações de ${place.name}`}
                         >
-                          <Volume2 className="w-4 h-4" />
+                          {speakingPlaceId === place.id && globalIsSpeaking ? (
+                            <Square className="w-4 h-4 fill-current text-white animate-pulse" />
+                          ) : (
+                            <Volume2 className="w-4 h-4" />
+                          )}
                         </button>
                       </div>
                     </div>

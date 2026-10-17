@@ -25,6 +25,7 @@ import {
   FileCheck2,
   RefreshCw,
   Pill,
+  Square,
 } from 'lucide-react';
 import {
   ActiveTab,
@@ -33,7 +34,7 @@ import {
   OcrPrescriptionResult,
   StructuredExplanation,
 } from '../types';
-import { speakText, stopSpeaking } from '../utils/speech';
+import { speakText, stopSpeaking, useAudioPlayer } from '../utils/speech';
 import { UniversalVoiceListener } from '../utils/audioRecorder';
 import { compressImageForOcr } from '../utils/imageCompressor';
 import { AudioControlsBar } from './AudioControlsBar';
@@ -170,7 +171,14 @@ export const AssistedReaderView: React.FC<AssistedReaderViewProps> = ({
   const [micError, setMicError] = useState<string | null>(null);
   const micListenerRef = useRef<UniversalVoiceListener | null>(null);
 
+  const { isSpeaking: globalIsSpeaking } = useAudioPlayer();
   const [activeSpeechSection, setActiveSpeechSection] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!globalIsSpeaking) {
+      setActiveSpeechSection(null);
+    }
+  }, [globalIsSpeaking]);
 
   const [reminderMedicine, setReminderMedicine] = useState('');
   const [isReminderMedConfirmed, setIsReminderMedConfirmed] = useState(false);
@@ -468,13 +476,13 @@ export const AssistedReaderView: React.FC<AssistedReaderViewProps> = ({
     await executeProcessOCR(selectedImage, mimeType);
   };
 
-  const handleSpeak = (text: string, sectionId?: string) => {
-    if (activeSpeechSection === sectionId) {
+  const handleSpeak = (text: string, sectionId = 'main') => {
+    if (globalIsSpeaking && activeSpeechSection === sectionId) {
       stopSpeaking();
       setActiveSpeechSection(null);
       return;
     }
-    setActiveSpeechSection(sectionId || 'main');
+    setActiveSpeechSection(sectionId);
     speakText(
       text,
       () => {},
@@ -655,15 +663,28 @@ export const AssistedReaderView: React.FC<AssistedReaderViewProps> = ({
             </div>
           </div>
           <button
-            onClick={() =>
+            type="button"
+            data-no-speech="true"
+            onClick={(e) => {
+              e.stopPropagation();
               handleSpeak(
-                'Tela Ler e ouvir. Aqui você pode fotografar um texto de receita ou remédio, escolher uma foto da galeria ou digitar um texto para ouvir em voz alta.'
-              )
-            }
-            className="p-2 text-teal-600 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-300 rounded-xl"
-            aria-label="Ouvir orientações da tela Ler e ouvir"
+                'Tela Ler e ouvir. Aqui você pode fotografar um texto de receita ou remédio, escolher uma foto da galeria ou digitar um texto para ouvir em voz alta.',
+                'intro'
+              );
+            }}
+            className={`p-2 rounded-xl transition cursor-pointer ${
+              activeSpeechSection === 'intro'
+                ? 'bg-red-600 text-white shadow-sm'
+                : 'text-teal-600 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-300'
+            }`}
+            aria-label={activeSpeechSection === 'intro' ? 'Parar leitura das orientações' : 'Ouvir orientações da tela Ler e ouvir'}
+            title={activeSpeechSection === 'intro' ? 'Parar leitura' : 'Ouvir orientações'}
           >
-            <Volume2 className="w-5 h-5" />
+            {activeSpeechSection === 'intro' ? (
+              <Square className="w-5 h-5 fill-current" />
+            ) : (
+              <Volume2 className="w-5 h-5" />
+            )}
           </button>
         </div>
       </section>
@@ -1083,16 +1104,33 @@ export const AssistedReaderView: React.FC<AssistedReaderViewProps> = ({
                 </span>
                 <button
                   type="button"
-                  onClick={() =>
+                  data-no-speech="true"
+                  onClick={(e) => {
+                    e.stopPropagation();
                     handleSpeak(
                       `Remédio identificado: ${result.medicineName}. ${result.dosageAndForm ? `Dosagem: ${result.dosageAndForm}.` : ''} ${result.instructions ? `Instruções: ${result.instructions}` : ''}`,
                       'med-ident'
-                    )
-                  }
-                  className="bg-white hover:bg-emerald-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-emerald-900 dark:text-emerald-300 px-3.5 py-1.5 rounded-xl font-black text-xs flex items-center gap-1.5 shadow transition border border-transparent dark:border-slate-700"
+                    );
+                  }}
+                  className={`px-3.5 py-1.5 rounded-xl font-black text-xs flex items-center gap-1.5 shadow transition border cursor-pointer ${
+                    activeSpeechSection === 'med-ident'
+                      ? 'bg-red-600 hover:bg-red-700 text-white border-red-500 shadow-md animate-pulse'
+                      : 'bg-white hover:bg-emerald-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-emerald-900 dark:text-emerald-300 border-transparent dark:border-slate-700'
+                  }`}
+                  aria-label={activeSpeechSection === 'med-ident' ? 'Parar leitura do medicamento' : 'Ouvir informações do medicamento identificado'}
+                  title={activeSpeechSection === 'med-ident' ? 'Parar áudio' : 'Ouvir medicamento'}
                 >
-                  <Volume2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                  <span>Ouvir</span>
+                  {activeSpeechSection === 'med-ident' ? (
+                    <>
+                      <Square className="w-4 h-4 fill-current" />
+                      <span>Parar</span>
+                    </>
+                  ) : (
+                    <>
+                      <Volume2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                      <span>Ouvir</span>
+                    </>
+                  )}
                 </button>
               </div>
 
@@ -1163,12 +1201,30 @@ export const AssistedReaderView: React.FC<AssistedReaderViewProps> = ({
               <div className="flex items-center gap-1">
                 <button
                   type="button"
-                  onClick={() => handleSpeak(editableText, 'ocr')}
-                  className="bg-teal-50 dark:bg-teal-950 text-teal-800 dark:text-teal-300 px-3 py-1.5 rounded-xl font-black text-xs flex items-center gap-1 border border-teal-300 dark:border-teal-700 hover:bg-teal-100"
-                  aria-label="Ouvir texto reconhecido em voz alta"
+                  data-no-speech="true"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSpeak(editableText, 'ocr');
+                  }}
+                  className={`px-3 py-1.5 rounded-xl font-black text-xs flex items-center gap-1 border transition cursor-pointer ${
+                    activeSpeechSection === 'ocr'
+                      ? 'bg-red-600 hover:bg-red-700 text-white border-red-500 shadow-md animate-pulse'
+                      : 'bg-teal-50 dark:bg-teal-950 text-teal-800 dark:text-teal-300 border-teal-300 dark:border-teal-700 hover:bg-teal-100'
+                  }`}
+                  aria-label={activeSpeechSection === 'ocr' ? 'Parar leitura do texto reconhecido' : 'Ouvir texto reconhecido em voz alta'}
+                  title={activeSpeechSection === 'ocr' ? 'Parar áudio' : 'Ouvir texto'}
                 >
-                  <Volume2 className="w-4 h-4" />
-                  <span>{activeSpeechSection === 'ocr' ? 'Pausar' : 'Ouvir'}</span>
+                  {activeSpeechSection === 'ocr' ? (
+                    <>
+                      <Square className="w-4 h-4 fill-current" />
+                      <span>Parar</span>
+                    </>
+                  ) : (
+                    <>
+                      <Volume2 className="w-4 h-4" />
+                      <span>Ouvir</span>
+                    </>
+                  )}
                 </button>
                 <button
                   type="button"
@@ -1611,11 +1667,30 @@ export const AssistedReaderView: React.FC<AssistedReaderViewProps> = ({
             <button
               type="button"
               disabled={!customText.trim()}
-              onClick={() => handleSpeak(customText, 'custom')}
-              className="btn-contrast-solid bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-black py-3 px-3 rounded-2xl text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow"
+              data-no-speech="true"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleSpeak(customText, 'custom');
+              }}
+              className={`btn-contrast-solid disabled:opacity-50 text-white font-black py-3 px-3 rounded-2xl text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow cursor-pointer transition ${
+                activeSpeechSection === 'custom'
+                  ? 'bg-red-600 hover:bg-red-700 shadow-md animate-pulse'
+                  : 'bg-indigo-600 hover:bg-indigo-700'
+              }`}
+              aria-label={activeSpeechSection === 'custom' ? 'Parar leitura do texto digitado' : 'Ouvir texto digitado em voz alta'}
+              title={activeSpeechSection === 'custom' ? 'Parar leitura' : 'Ouvir texto'}
             >
-              <Volume2 className="w-4 h-4" />
-              <span>{activeSpeechSection === 'custom' ? 'Pausar leitura' : 'Ouvir em voz alta'}</span>
+              {activeSpeechSection === 'custom' ? (
+                <>
+                  <Square className="w-4 h-4 fill-current" />
+                  <span>Parar leitura</span>
+                </>
+              ) : (
+                <>
+                  <Volume2 className="w-4 h-4" />
+                  <span>Ouvir em voz alta</span>
+                </>
+              )}
             </button>
             <button
               type="button"

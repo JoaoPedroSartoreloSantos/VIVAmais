@@ -10,16 +10,24 @@ import {
   Lock,
   Info,
   Sparkles,
+  Square,
 } from 'lucide-react';
 import { ScamAnalysisResult } from '../types';
-import { speakText, stopSpeaking } from '../utils/speech';
+import { speakText, stopSpeaking, useAudioPlayer } from '../utils/speech';
 
 export const ScamDetectorView: React.FC = () => {
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
   const [analysis, setAnalysis] = useState<ScamAnalysisResult | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const { isSpeaking: globalIsSpeaking } = useAudioPlayer();
   const [isSpeaking, setIsSpeaking] = useState(false);
+
+  React.useEffect(() => {
+    if (!globalIsSpeaking) {
+      setIsSpeaking(false);
+    }
+  }, [globalIsSpeaking]);
 
   const samples = [
     {
@@ -74,11 +82,16 @@ export const ScamDetectorView: React.FC = () => {
   };
 
   const handleToggleAudio = () => {
-    if (isSpeaking) {
+    if (isSpeaking || globalIsSpeaking) {
       stopSpeaking();
       setIsSpeaking(false);
     } else if (analysis) {
-      speakText(analysis.speechText, () => setIsSpeaking(true), () => setIsSpeaking(false));
+      setIsSpeaking(true);
+      speakText(
+        analysis.speechText,
+        () => setIsSpeaking(true),
+        () => setIsSpeaking(false)
+      );
     }
   };
 
@@ -248,13 +261,23 @@ export const ScamDetectorView: React.FC = () => {
               );
             })()}
             <button
-              onClick={handleToggleAudio}
-              className="bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 px-3.5 py-1.5 rounded-2xl font-bold text-xs sm:text-sm flex items-center gap-2 shadow-sm transition"
+              type="button"
+              data-no-speech="true"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleToggleAudio();
+              }}
+              className={`border px-3.5 py-1.5 rounded-2xl font-bold text-xs sm:text-sm flex items-center gap-2 shadow-sm transition cursor-pointer ${
+                isSpeaking
+                  ? 'bg-red-600 hover:bg-red-700 text-white border-red-500 shadow-md animate-pulse'
+                  : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-300 dark:border-slate-700'
+              }`}
               aria-label={isSpeaking ? 'Parar leitura de áudio' : 'Ouvir análise completa em voz alta'}
+              title={isSpeaking ? 'Parar leitura' : 'Ouvir análise'}
             >
               {isSpeaking ? (
                 <>
-                  <VolumeX className="w-4 h-4 text-red-600 animate-pulse" />
+                  <Square className="w-4 h-4 fill-current" />
                   <span>Parar áudio</span>
                 </>
               ) : (
