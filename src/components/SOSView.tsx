@@ -295,7 +295,7 @@ export const SOSView: React.FC<SOSViewProps> = ({
               <button
                 type="button"
                 onClick={() => setIsEditing(false)}
-                className="text-xs text-slate-500 hover:text-slate-800 font-bold"
+                className="text-xs text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 font-bold"
               >
                 Cancelar
               </button>

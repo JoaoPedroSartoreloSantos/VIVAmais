@@ -1,4 +1,137 @@
-// Accessibility Audio Assistant for VIVA+
+// Accessibility Audio Assistant & Speech Engine for VIVA+
+import { useState, useEffect } from 'react';
+
+export interface AudioSettingsState {
+  volume: number; // 0 to 100
+  isMuted: boolean;
+  isSpeaking: boolean;
+  currentText: string;
+}
+
+const STORAGE_KEY = 'viva_audio_settings';
+
+// Load initial audio settings from localStorage
+function loadSavedSettings(): { volume: number; isMuted: boolean } {
+  if (typeof window === 'undefined') {
+    return { volume: 100, isMuted: false };
+  }
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return {
+        volume: typeof parsed.volume === 'number' ? Math.max(0, Math.min(100, parsed.volume)) : 100,
+        isMuted: Boolean(parsed.isMuted),
+      };
+    }
+  } catch {}
+  return { volume: 100, isMuted: false };
+}
+
+function saveAudioSettings(vol: number, muted: boolean) {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ volume: vol, isMuted: muted }));
+  } catch {}
+}
+
+const initialSaved = loadSavedSettings();
+let currentVolume = initialSaved.volume;
+let currentMuted = initialSaved.isMuted;
+let isSpeakingActive = false;
+let currentlySpokenText = '';
+
+type AudioListener = (state: AudioSettingsState) => void;
+const listeners = new Set<AudioListener>();
+
+function notifyListeners() {
+  const state = getAudioSettings();
+  listeners.forEach((listener) => {
+    try {
+      listener(state);
+    } catch (e) {
+      console.warn('Erro em listener de áudio:', e);
+    }
+  });
+}
+
+export function getAudioSettings(): AudioSettingsState {
+  return {
+    volume: currentVolume,
+    isMuted: currentMuted,
+    isSpeaking: isSpeakingActive,
+    currentText: currentlySpokenText,
+  };
+}
+
+export function setAudioVolume(vol: number): void {
+  const clamped = Math.max(0, Math.min(100, Math.round(vol)));
+  currentVolume = clamped;
+  if (currentMuted && clamped > 0) {
+    currentMuted = false;
+  }
+  saveAudioSettings(currentVolume, currentMuted);
+  notifyListeners();
+}
+
+export function increaseVolume(step = 10): void {
+  setAudioVolume(currentVolume + step);
+}
+
+export function decreaseVolume(step = 10): void {
+  setAudioVolume(currentVolume - step);
+}
+
+export function toggleAudioMute(): boolean {
+  currentMuted = !currentMuted;
+  if (currentMuted && isSpeakingActive) {
+    stopSpeaking();
+  }
+  saveAudioSettings(currentVolume, currentMuted);
+  notifyListeners();
+  return currentMuted;
+}
+
+export function setAudioMute(muted: boolean): void {
+  currentMuted = Boolean(muted);
+  if (currentMuted && isSpeakingActive) {
+    stopSpeaking();
+  }
+  saveAudioSettings(currentVolume, currentMuted);
+  notifyListeners();
+}
+
+export function subscribeAudioState(listener: AudioListener): () => void {
+  listeners.add(listener);
+  // Emit current state immediately
+  listener(getAudioSettings());
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
+/**
+ * React hook to access and control audio globally
+ */
+export function useAudioPlayer() {
+  const [state, setState] = useState<AudioSettingsState>(getAudioSettings);
+
+  useEffect(() => {
+    return subscribeAudioState((newState) => {
+      setState(newState);
+    });
+  }, []);
+
+  return {
+    ...state,
+    setVolume: setAudioVolume,
+    increaseVolume,
+    decreaseVolume,
+    toggleMute: toggleAudioMute,
+    setMute: setAudioMute,
+    stop: stopSpeaking,
+  };
+}
 
 let activeUtterance: SpeechSynthesisUtterance | null = null;
 let cachedVoices: SpeechSynthesisVoice[] = [];
@@ -25,7 +158,7 @@ export function isSpeechSupported(): boolean {
 
 export function isSpeaking(): boolean {
   if (!isSpeechSupported()) return false;
-  return window.speechSynthesis.speaking;
+  return isSpeakingActive || window.speechSynthesis.speaking;
 }
 
 export function stopSpeaking(): void {
@@ -37,6 +170,9 @@ export function stopSpeaking(): void {
       console.warn('Erro ao interromper áudio:', e);
     }
   }
+  isSpeakingActive = false;
+  currentlySpokenText = '';
+  notifyListeners();
 }
 
 export function explainFunctionClick(name: string, description: string): void {
@@ -103,8 +239,15 @@ export function speakText(
     return;
   }
 
+  // If audio is muted by user, suppress audible speech
+  if (currentMuted) {
+    if (onEnd) onEnd();
+    return;
+  }
+
   lastSpokenTime = Date.now();
   lastSpokenText = text;
+  currentlySpokenText = text;
 
   const cleanText = text
     .replace(/[#*_`]/g, '')
@@ -115,7 +258,10 @@ export function speakText(
   const utterance = new SpeechSynthesisUtterance(cleanText);
   utterance.rate = rate;
   utterance.pitch = 1.0;
-  utterance.volume = 1.0;
+  
+  // Real volume from 0.0 to 1.0 respecting user volume control and mute state
+  const effectiveVolume = currentMuted ? 0.0 : Math.max(0.0, Math.min(1.0, currentVolume / 100));
+  utterance.volume = effectiveVolume;
 
   // Retrieve available voices dynamically
   let availableVoices =
@@ -159,11 +305,16 @@ export function speakText(
   }
 
   utterance.onstart = () => {
+    isSpeakingActive = true;
+    notifyListeners();
     if (onStart) onStart();
   };
 
   utterance.onend = () => {
     activeUtterance = null;
+    isSpeakingActive = false;
+    currentlySpokenText = '';
+    notifyListeners();
     if (onEnd) onEnd();
   };
 
@@ -172,6 +323,9 @@ export function speakText(
       console.warn('Aviso na síntese de voz:', e.error);
     }
     activeUtterance = null;
+    isSpeakingActive = false;
+    currentlySpokenText = '';
+    notifyListeners();
     if (onEnd) onEnd();
   };
 
@@ -188,12 +342,16 @@ export function speakText(
       } catch (err) {
         console.error('Falha ao executar speak():', err);
         activeUtterance = null;
+        isSpeakingActive = false;
+        notifyListeners();
         if (onEnd) onEnd();
       }
     }, 20);
   } catch (e) {
     console.error('Falha ao acionar voz:', e);
     activeUtterance = null;
+    isSpeakingActive = false;
+    notifyListeners();
     if (onEnd) onEnd();
   }
 }

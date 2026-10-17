@@ -421,8 +421,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               }}
               className={`p-3 rounded-2xl border-2 text-center transition flex flex-col items-center justify-center gap-1.5 ${
                 settings.theme === 'normal'
-                  ? 'border-sky-600 bg-sky-50 text-sky-900 ring-2 ring-sky-500 font-black'
-                  : 'border-slate-300 dark:border-slate-700 bg-white text-slate-800 font-bold'
+                  ? 'border-sky-600 bg-sky-50 dark:bg-sky-950 text-sky-900 dark:text-sky-200 ring-2 ring-sky-500 font-black'
+                  : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold'
               }`}
             >
               <Sun className="w-5 h-5 text-amber-500" />
@@ -452,7 +452,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               className={`p-3 rounded-2xl border-2 text-center transition flex flex-col items-center justify-center gap-1.5 ${
                 settings.theme === 'rest'
                   ? 'border-sky-500 bg-slate-900 text-white ring-2 ring-sky-500 font-black'
-                  : 'border-slate-300 dark:border-slate-700 bg-slate-900 text-slate-300 font-bold'
+                  : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-300 font-bold'
               }`}
             >
               <Moon className="w-5 h-5 text-indigo-400" />
@@ -707,7 +707,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                   <div className="flex items-center gap-1.5 shrink-0">
                     <a
                       href={`tel:${member.phone.replace(/\D/g, '')}`}
-                      className="p-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 rounded-xl text-xs font-bold"
+                      className="p-2 bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-950/70 dark:hover:bg-emerald-900/80 text-emerald-800 dark:text-emerald-300 rounded-xl text-xs font-bold border border-transparent dark:border-emerald-700"
                       aria-label={`Ligar para ${member.name}`}
                     >
                       <PhoneCall className="w-3.5 h-3.5" />

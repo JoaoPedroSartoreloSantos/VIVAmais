@@ -86,25 +86,25 @@ export const ScamDetectorView: React.FC = () => {
     switch (level) {
       case 'alto':
         return {
-          bg: 'bg-red-100 dark:bg-red-950/80 text-red-800 dark:text-red-200 border-red-300',
+          bg: 'bg-red-100 dark:bg-red-950/80 text-red-800 dark:text-red-200 border-red-300 dark:border-red-800',
           icon: ShieldAlert,
           label: 'ALTO RISCO DE GOLPE',
         };
       case 'medio':
         return {
-          bg: 'bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-200 border-amber-300',
+          bg: 'bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-200 border-amber-300 dark:border-amber-800',
           icon: AlertTriangle,
           label: 'MENSAGEM SUSPEITA / ATENÇÃO',
         };
       case 'baixo':
         return {
-          bg: 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-200 border-emerald-300',
+          bg: 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-200 border-emerald-300 dark:border-emerald-800',
           icon: CheckCircle,
           label: 'APARENTEMENTE SEGURA (MANTENHA CAUTELA)',
         };
       default:
         return {
-          bg: 'bg-slate-100 text-slate-800 border-slate-300',
+          bg: 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 border-slate-300 dark:border-slate-700',
           icon: HelpCircle,
           label: 'RESULTADO INCONCLUSIVO',
         };

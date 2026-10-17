@@ -36,6 +36,7 @@ import {
 import { speakText, stopSpeaking } from '../utils/speech';
 import { UniversalVoiceListener } from '../utils/audioRecorder';
 import { compressImageForOcr } from '../utils/imageCompressor';
+import { AudioControlsBar } from './AudioControlsBar';
 
 interface AssistedReaderViewProps {
   onNavigate?: (tab: ActiveTab) => void;
@@ -659,13 +660,19 @@ export const AssistedReaderView: React.FC<AssistedReaderViewProps> = ({
                 'Tela Ler e ouvir. Aqui você pode fotografar um texto de receita ou remédio, escolher uma foto da galeria ou digitar um texto para ouvir em voz alta.'
               )
             }
-            className="p-2 text-teal-600 hover:text-teal-800 rounded-xl"
+            className="p-2 text-teal-600 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-300 rounded-xl"
             aria-label="Ouvir orientações da tela Ler e ouvir"
           >
             <Volume2 className="w-5 h-5" />
           </button>
         </div>
       </section>
+
+      {/* Controles de Áudio e Volume Integrados */}
+      <AudioControlsBar
+        label="Painel de controle de voz e áudio"
+        className="animate-in fade-in duration-150"
+      />
 
       {/* MENU MODE */}
       {subMode === 'menu' && !selectedImage && (
@@ -683,7 +690,7 @@ export const AssistedReaderView: React.FC<AssistedReaderViewProps> = ({
             <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white">
               O que você deseja fazer agora?
             </h3>
-            <span className="text-xs font-semibold text-slate-500">Escolha uma ação:</span>
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Escolha uma ação:</span>
           </div>
 
           <div className="grid grid-cols-1 gap-5 sm:gap-6">
@@ -970,7 +977,7 @@ export const AssistedReaderView: React.FC<AssistedReaderViewProps> = ({
             <button
               type="button"
               onClick={handleDeletePhoto}
-              className="p-1.5 text-red-600 hover:text-red-800 text-xs font-black flex items-center gap-1"
+              className="p-1.5 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-xs font-black flex items-center gap-1"
               aria-label="Apagar esta foto da memória agora"
             >
               <Trash2 className="w-4 h-4" />
@@ -1053,6 +1060,19 @@ export const AssistedReaderView: React.FC<AssistedReaderViewProps> = ({
       {/* OCR RESULT */}
       {result && (
         <section className="space-y-4">
+          {/* Controles de Áudio para o Resultado Lido */}
+          <AudioControlsBar
+            label="Controles de áudio para leitura do resultado"
+            canPlay={true}
+            onPlayCurrent={() =>
+              handleSpeak(
+                result.speechTexts?.all ||
+                  `${result.medicineName ? `Remédio identificado: ${result.medicineName}. ` : ''}${result.dosageAndForm ? `Dosagem: ${result.dosageAndForm}. ` : ''}${result.instructions || ''} ${result.explanation?.plainLanguageExplanation || ''}`,
+                'med-ident'
+              )
+            }
+          />
+
           {/* Medicamento Identificado em Destaque com Ícone de Remédio */}
           {result.medicineName && (
             <div className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-3xl p-5 sm:p-6 shadow-xl border-2 border-emerald-300 space-y-3.5">
@@ -1069,9 +1089,9 @@ export const AssistedReaderView: React.FC<AssistedReaderViewProps> = ({
                       'med-ident'
                     )
                   }
-                  className="bg-white hover:bg-emerald-50 text-emerald-900 px-3.5 py-1.5 rounded-xl font-black text-xs flex items-center gap-1.5 shadow transition"
+                  className="bg-white hover:bg-emerald-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-emerald-900 dark:text-emerald-300 px-3.5 py-1.5 rounded-xl font-black text-xs flex items-center gap-1.5 shadow transition border border-transparent dark:border-slate-700"
                 >
-                  <Volume2 className="w-4 h-4 text-emerald-600" />
+                  <Volume2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                   <span>Ouvir</span>
                 </button>
               </div>
@@ -1496,7 +1516,7 @@ export const AssistedReaderView: React.FC<AssistedReaderViewProps> = ({
             <button
               type="button"
               onClick={() => setSubMode('menu')}
-              className="text-xs font-bold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+              className="text-xs font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
             >
               Voltar ao menu
             </button>
@@ -1557,7 +1577,7 @@ export const AssistedReaderView: React.FC<AssistedReaderViewProps> = ({
                   <button
                     type="button"
                     onClick={() => setMicPendingPhrase(null)}
-                    className="bg-slate-200 text-slate-800 font-bold py-1.5 px-3 rounded-xl"
+                    className="bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100 font-bold py-1.5 px-3 rounded-xl transition"
                   >
                     Descartar
                   </button>
@@ -1578,6 +1598,13 @@ export const AssistedReaderView: React.FC<AssistedReaderViewProps> = ({
             rows={5}
             placeholder="Digite ou cole aqui o texto da bula, receita, anotação ou mensagem..."
             className="w-full p-3.5 rounded-2xl border-2 border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white font-bold text-sm sm:text-base leading-relaxed"
+          />
+
+          {/* Controles de Volume e Reprodução Integrados */}
+          <AudioControlsBar
+            label="Controles de reprodução do texto digitado"
+            canPlay={!!customText.trim()}
+            onPlayCurrent={() => handleSpeak(customText, 'custom')}
           />
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -1714,7 +1741,7 @@ export const AssistedReaderView: React.FC<AssistedReaderViewProps> = ({
                 setIsTypedMedConfirmed(false);
                 setTypedMedSaved(false);
               }}
-              className="text-xs font-bold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 cursor-pointer"
+              className="text-xs font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 cursor-pointer"
             >
               Voltar ao menu
             </button>

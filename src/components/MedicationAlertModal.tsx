@@ -123,7 +123,7 @@ export const MedicationAlertModal: React.FC<MedicationAlertModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="w-full text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 text-xs font-semibold py-1.5 text-center"
+            className="w-full text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 text-xs font-semibold py-1.5 text-center"
           >
             Fechar este aviso
           </button>

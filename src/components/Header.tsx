@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Volume2,
+  VolumeX,
+  Square,
+  Sliders,
   ZoomIn,
   ZoomOut,
   Sun,
@@ -12,7 +15,8 @@ import {
 } from 'lucide-react';
 import { AccessibilitySettings, UserProfile } from '../types';
 import { VivaLogo } from './VivaLogo';
-import { speakText } from '../utils/speech';
+import { speakText, useAudioPlayer } from '../utils/speech';
+import { AudioControlsBar } from './AudioControlsBar';
 
 interface HeaderProps {
   settings: AccessibilitySettings;
@@ -35,6 +39,9 @@ export const Header: React.FC<HeaderProps> = ({
   onNavigateAuth,
   screenDescription,
 }) => {
+  const { isSpeaking, isMuted, stop } = useAudioPlayer();
+  const [showAudioControls, setShowAudioControls] = useState(false);
+
   const handleFontChange = (delta: number) => {
     let nextScale = Math.round((settings.fontScale + delta) * 100) / 100;
     if (nextScale < 0.85) nextScale = 0.85;
@@ -50,6 +57,13 @@ export const Header: React.FC<HeaderProps> = ({
     onUpdateSettings(updated);
     document.body.className = '';
     document.body.classList.add(`theme-${theme}`);
+    if (theme === 'rest') {
+      document.documentElement.classList.add('dark');
+      document.body.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      document.body.classList.remove('dark');
+    }
     speakText(
       `Tema ${
         theme === 'contrast'
@@ -62,7 +76,11 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   const handleReadScreen = () => {
-    speakText(screenDescription);
+    if (isSpeaking) {
+      stop();
+    } else {
+      speakText(screenDescription);
+    }
   };
 
   // Botões de apoio reutilizados no mobile (linha 1) e desktop (barra horizontal unificada)
@@ -72,17 +90,54 @@ export const Header: React.FC<HeaderProps> = ({
         isDesktop ? 'hidden md:flex' : 'flex md:hidden'
       }`}
     >
-      {/* Botão Ouvir Tela */}
-      <button
-        type="button"
-        onClick={handleReadScreen}
-        className="bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 px-2.5 py-1.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition shrink-0 min-h-[44px] min-w-[44px] cursor-pointer focus:outline-none focus:ring-2 focus:ring-sky-500"
-        aria-label="Ouvir instruções da tela atual em voz alta"
-        title="Ouvir esta tela"
-      >
-        <Volume2 className="w-4 h-4 text-sky-600 dark:text-sky-300 shrink-0" />
-        <span className="hidden min-[480px]:inline md:inline text-xs font-black">Ouvir</span>
-      </button>
+      {/* Grupo Áudio: Ouvir / Parar e Ajustar Volume */}
+      <div className="flex items-center gap-1 shrink-0">
+        <button
+          type="button"
+          onClick={handleReadScreen}
+          className={`px-2.5 py-1.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition shrink-0 min-h-[44px] min-w-[44px] cursor-pointer focus:outline-none focus:ring-2 focus:ring-sky-500 border ${
+            isSpeaking
+              ? 'bg-red-600 hover:bg-red-700 text-white border-red-500 shadow-md animate-pulse'
+              : isMuted
+              ? 'bg-amber-100 hover:bg-amber-200 text-amber-900 dark:bg-amber-950 dark:text-amber-200 border-amber-300 dark:border-amber-700'
+              : 'bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700'
+          }`}
+          aria-label={
+            isSpeaking
+              ? 'Parar leitura da tela em voz alta'
+              : isMuted
+              ? 'Áudio silenciado. Toque para reativar e ouvir esta tela'
+              : 'Ouvir instruções da tela atual em voz alta'
+          }
+          title={isSpeaking ? 'Parar leitura' : 'Ouvir esta tela'}
+        >
+          {isSpeaking ? (
+            <Square className="w-4 h-4 fill-current shrink-0" />
+          ) : isMuted ? (
+            <VolumeX className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+          ) : (
+            <Volume2 className="w-4 h-4 text-sky-600 dark:text-sky-300 shrink-0" />
+          )}
+          <span className="hidden min-[480px]:inline md:inline text-xs font-black">
+            {isSpeaking ? 'Parar' : isMuted ? 'Mudo' : 'Ouvir'}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setShowAudioControls(!showAudioControls)}
+          className={`p-2 rounded-xl border transition min-h-[44px] min-w-[38px] flex items-center justify-center cursor-pointer focus:outline-none focus:ring-2 focus:ring-sky-500 ${
+            showAudioControls
+              ? 'bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300 border-sky-400 dark:border-sky-600 shadow-xs'
+              : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700'
+          }`}
+          aria-label="Abrir controles de volume e áudio do aplicativo"
+          title="Ajustar volume da voz"
+          aria-expanded={showAudioControls}
+        >
+          <Sliders className="w-4 h-4 shrink-0" />
+        </button>
+      </div>
 
       {/* Botão Sobre o App (ODS e Fontes Oficiais) */}
       <button
@@ -129,13 +184,11 @@ export const Header: React.FC<HeaderProps> = ({
     <header
       className="w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30 transition-colors shadow-xs"
       style={{
-        paddingTop: 'max(0.5rem, env(safe-area-inset-top, 0px))',
-        paddingLeft: 'max(0.625rem, env(safe-area-inset-left, 0px))',
-        paddingRight: 'max(0.625rem, env(safe-area-inset-right, 0px))',
+        paddingTop: 'calc(0.5rem + env(safe-area-inset-top, 0px))',
         paddingBottom: '0.5rem',
       }}
     >
-      <div className="max-w-4xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-1.5 sm:gap-2">
+      <div className="max-w-4xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-1.5 sm:gap-2 px-3 sm:px-4">
         {/* ============================================================ */}
         {/* PRIMEIRA LINHA NO CELULAR (Android e iOS)                    */}
         {/* Logotipo VIVA+ à esquerda e Ações de Apoio (Áudio, Info,     */}
@@ -183,9 +236,7 @@ export const Header: React.FC<HeaderProps> = ({
               <ZoomOut className="w-4 h-4 shrink-0" />
               <span className="text-xs font-black">A−</span>
             </button>
-
-            <div className="w-[1px] h-5 bg-slate-300 dark:bg-slate-600" aria-hidden="true" />
-
+            <div className="h-5 w-px bg-slate-300 dark:bg-slate-700" aria-hidden="true" />
             <button
               type="button"
               onClick={() => handleFontChange(0.1)}
@@ -260,6 +311,16 @@ export const Header: React.FC<HeaderProps> = ({
           {renderSupportActions(true)}
         </div>
       </div>
+
+      {/* Painel Expansível de Controle de Volume e Áudio na Barra Superior */}
+      {showAudioControls && (
+        <div className="max-w-4xl mx-auto px-3 sm:px-4 pt-2 border-t border-slate-200 dark:border-slate-800 animate-in slide-in-from-top-2 duration-150">
+          <AudioControlsBar
+            variant="compact"
+            label="Controles rápidos de áudio do aplicativo"
+          />
+        </div>
+      )}
     </header>
   );
 };

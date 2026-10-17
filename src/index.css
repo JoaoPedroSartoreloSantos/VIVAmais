@@ -1,7 +1,32 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-viva-mint: #B6FFFA;
+  --color-viva-sky: #98E4FF;
+  --color-viva-blue: #80B3FF;
+  --color-viva-royal: #687EFF;
+  --color-slate-750: #263348;
+  --color-slate-850: #152033;
+  --color-slate-950: #0a0f1d;
+}
+
 :root {
   --font-scale: 1;
+
+  /* Paleta Oficial VIVA+ */
+  --viva-mint: #B6FFFA;
+  --viva-sky: #98E4FF;
+  --viva-blue: #80B3FF;
+  --viva-royal: #687EFF;
+
+  /* Tokens semânticos de modo claro */
+  --bg-app: #f1f5f9;
+  --bg-card: #ffffff;
+  --text-main: #0f172a;
+  --text-muted: #334155;
+  --border-card: #cbd5e1;
 }
 
 html {
@@ -15,6 +40,7 @@ html {
 body {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  min-height: 100vh;
 }
 
 /* ========================================================
@@ -32,14 +58,14 @@ body.theme-normal .text-muted-accessible {
 body.theme-normal input,
 body.theme-normal textarea,
 body.theme-normal select {
-  background-color: #ffffff !important;
-  color: #0f172a !important;
-  border-color: #64748b !important;
+  background-color: #ffffff;
+  color: #0f172a;
+  border-color: #64748b;
 }
 
 body.theme-normal input::placeholder,
 body.theme-normal textarea::placeholder {
-  color: #64748b !important;
+  color: #64748b;
 }
 
 /* ========================================================
@@ -61,7 +87,7 @@ body.theme-contrast section,
 body.theme-contrast article,
 body.theme-contrast aside,
 body.theme-contrast form,
-body.theme-contrast div:not(.modal-backdrop),
+body.theme-contrast div:not(.modal-backdrop):not(.brand-logo-img),
 body.theme-contrast [class*="bg-"] {
   background-color: #000000 !important;
   background-image: none !important;
@@ -187,7 +213,7 @@ body.theme-contrast nav button.nav-active {
   outline-offset: 1px;
 }
 
-/* Botão SOS de Emergência Flutuante no Alto Contraste: Fundo Preto com Borda Amarela e Texto Preto com Borda Amarela */
+/* Botão SOS de Emergência Flutuante no Alto Contraste */
 body.theme-contrast .btn-sos-real {
   background-color: #000000 !important;
   border: 3px solid #ffff00 !important;
@@ -206,53 +232,125 @@ body.theme-contrast nav {
 }
 
 /* ========================================================
-   3. TEMA ESCURO / DESCANSO VISUAL (WCAG AAA)
+   3. TEMA ESCURO / DESCANSO VISUAL (WCAG 2.2 AA / AAA)
    ======================================================== */
+html.dark,
+body.dark,
 body.theme-rest {
-  background-color: #070b13 !important;
+  background-color: #0a0f1d !important;
   color: #f8fafc !important;
+  color-scheme: dark;
 }
 
-body.theme-rest .bg-white,
-body.theme-rest .bg-slate-50,
-body.theme-rest .bg-slate-100,
-body.theme-rest .bg-sky-50,
-body.theme-rest .bg-sky-100,
-body.theme-rest .bg-emerald-50,
-body.theme-rest .bg-amber-50,
-body.theme-rest .bg-teal-50,
-body.theme-rest .bg-indigo-50,
-body.theme-rest [class*="from-sky-50"],
-body.theme-rest [class*="to-indigo-50"] {
-  background-color: #111827 !important;
-  background-image: none !important;
-  color: #f8fafc !important;
-  border-color: #1f2937 !important;
+/* Fundo padrão do aplicativo no modo escuro */
+html.dark #root,
+body.theme-rest #root {
+  background-color: #0a0f1d;
+  color: #f8fafc;
 }
 
+/* Cabeçalho e Navegação inferior com contraste nítido e fundo escuro profundo */
+html.dark header,
 body.theme-rest header,
+html.dark nav,
 body.theme-rest nav {
-  background-color: #0f172a !important;
-  border-color: #1e293b !important;
+  background-color: rgba(15, 23, 42, 0.95);
+  border-color: #1e293b;
 }
 
-body.theme-rest input,
+/* Campos de entrada no modo escuro com alto contraste e legibilidade perfeita */
+html.dark input:not([type="range"]):not([type="checkbox"]):not([type="radio"]),
+body.theme-rest input:not([type="range"]):not([type="checkbox"]):not([type="radio"]),
+html.dark textarea,
 body.theme-rest textarea,
+html.dark select,
 body.theme-rest select {
-  background-color: #0f172a !important;
-  color: #ffffff !important;
-  border-color: #374151 !important;
+  background-color: #0f172a;
+  color: #f8fafc;
+  border-color: #334155;
 }
 
-body.theme-rest [class*="text-slate-900"],
-body.theme-rest [class*="text-slate-800"],
-body.theme-rest [class*="text-slate-700"] {
-  color: #f8fafc !important;
+html.dark input::placeholder,
+body.theme-rest input::placeholder,
+html.dark textarea::placeholder,
+body.theme-rest textarea::placeholder {
+  color: #94a3b8;
 }
 
-body.theme-rest [class*="text-slate-600"],
-body.theme-rest [class*="text-slate-500"] {
-  color: #cbd5e1 !important;
+html.dark input:focus,
+body.theme-rest input:focus,
+html.dark textarea:focus,
+body.theme-rest textarea:focus,
+html.dark select:focus,
+body.theme-rest select:focus {
+  border-color: #38bdf8;
+  outline: 2px solid #38bdf8;
+  outline-offset: 1px;
+}
+
+/* Garantia de contraste WCAG 2.2 AA para textos secundários e detalhes no modo escuro */
+html.dark .text-slate-500,
+body.theme-rest .text-slate-500 {
+  color: #94a3b8;
+}
+
+html.dark .text-slate-400,
+body.theme-rest .text-slate-400 {
+  color: #cbd5e1;
+}
+
+html.dark .text-slate-600,
+body.theme-rest .text-slate-600 {
+  color: #e2e8f0;
+}
+
+/* Prevenção universal para componentes que não acompanhem o tema escuro */
+html.dark .text-slate-900:not([class*="dark:text-"]),
+body.theme-rest .text-slate-900:not([class*="dark:text-"]),
+html.dark .text-slate-800:not([class*="dark:text-"]),
+body.theme-rest .text-slate-800:not([class*="dark:text-"]) {
+  color: #f8fafc;
+}
+
+html.dark .text-slate-700:not([class*="dark:text-"]),
+body.theme-rest .text-slate-700:not([class*="dark:text-"]) {
+  color: #e2e8f0;
+}
+
+html.dark .bg-white:not([class*="dark:bg-"]):not(.brand-logo-img),
+body.theme-rest .bg-white:not([class*="dark:bg-"]):not(.brand-logo-img) {
+  background-color: #0f172a;
+}
+
+html.dark .bg-slate-50:not([class*="dark:bg-"]),
+body.theme-rest .bg-slate-50:not([class*="dark:bg-"]) {
+  background-color: #152033;
+}
+
+html.dark .bg-slate-100:not([class*="dark:bg-"]),
+body.theme-rest .bg-slate-100:not([class*="dark:bg-"]) {
+  background-color: #1e293b;
+}
+
+html.dark .border-slate-200:not([class*="dark:border-"]),
+body.theme-rest .border-slate-200:not([class*="dark:border-"]) {
+  border-color: #1e293b;
+}
+
+html.dark .border-slate-300:not([class*="dark:border-"]),
+body.theme-rest .border-slate-300:not([class*="dark:border-"]) {
+  border-color: #334155;
+}
+
+/* Estilo consistente para controle deslizante de volume */
+input[type="range"] {
+  accent-color: #687EFF;
+}
+
+/* Estilos de caixas de diálogo / modais no modo escuro */
+html.dark [role="dialog"],
+body.theme-rest [role="dialog"] {
+  color: #f8fafc;
 }
 
 /* ========================================================
@@ -260,6 +358,12 @@ body.theme-rest [class*="text-slate-500"] {
    ======================================================== */
 :focus-visible {
   outline: 3px solid #0284c7;
+  outline-offset: 2px;
+}
+
+html.dark :focus-visible,
+body.theme-rest :focus-visible {
+  outline: 3px solid #38bdf8;
   outline-offset: 2px;
 }
 

@@ -147,6 +147,13 @@ export default function App() {
   useEffect(() => {
     document.body.className = '';
     document.body.classList.add(`theme-${settings.theme}`);
+    if (settings.theme === 'rest') {
+      document.documentElement.classList.add('dark');
+      document.body.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      document.body.classList.remove('dark');
+    }
     document.documentElement.style.setProperty('--font-scale', `${settings.fontScale}`);
   }, [settings]);
 

@@ -356,7 +356,7 @@ export const CaregiverNetworkView: React.FC<CaregiverNetworkViewProps> = ({
                 </h3>
                 <button
                   onClick={() => setIsCreatingInvite(false)}
-                  className="text-xs font-bold text-slate-500 hover:text-slate-800"
+                  className="text-xs font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
                 >
                   Cancelar
                 </button>
@@ -586,7 +586,7 @@ export const CaregiverNetworkView: React.FC<CaregiverNetworkViewProps> = ({
                     </div>
                     <button
                       onClick={() => handleSelectPatient(selectedPatientId!)}
-                      className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1"
+                      className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 text-xs font-bold flex items-center gap-1 transition"
                     >
                       <RefreshCw className="w-3.5 h-3.5" />
                       <span>Atualizar</span>
@@ -633,10 +633,10 @@ export const CaregiverNetworkView: React.FC<CaregiverNetworkViewProps> = ({
                                         key={time}
                                         className={`px-3 py-1.5 rounded-xl text-xs font-bold border flex items-center gap-1.5 ${
                                           status === 'taken'
-                                            ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
+                                            ? 'bg-emerald-100 text-emerald-900 border-emerald-300 dark:bg-emerald-950/70 dark:text-emerald-300 dark:border-emerald-700'
                                             : status === 'skipped'
-                                            ? 'bg-rose-100 text-rose-900 border-rose-300'
-                                            : 'bg-amber-100 text-amber-900 border-amber-300'
+                                            ? 'bg-rose-100 text-rose-900 border-rose-300 dark:bg-rose-950/70 dark:text-rose-300 dark:border-rose-700'
+                                            : 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-950/70 dark:text-amber-300 dark:border-amber-700'
                                         }`}
                                       >
                                         <Clock className="w-3.5 h-3.5" />

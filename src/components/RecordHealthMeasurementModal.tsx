@@ -143,12 +143,12 @@ export const RecordHealthMeasurementModal: React.FC<RecordHealthMeasurementModal
     if (dia <= 18) dia *= 10;
 
     if (sys < 120 && dia < 80) {
-      return { label: 'Pressão Ótima / Normal', color: 'text-emerald-700 bg-emerald-100 dark:bg-emerald-950/70 border-emerald-300' };
+      return { label: 'Pressão Ótima / Normal', color: 'text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/70 border-emerald-300 dark:border-emerald-700' };
     }
     if (sys <= 139 || dia <= 89) {
-      return { label: 'Pressão Limítrofe / Atenção', color: 'text-amber-800 bg-amber-100 dark:bg-amber-950/70 border-amber-300' };
+      return { label: 'Pressão Limítrofe / Atenção', color: 'text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/70 border-amber-300 dark:border-amber-700' };
     }
-    return { label: 'Pressão Elevada / Consulte seu médico', color: 'text-red-800 bg-red-100 dark:bg-red-950/70 border-red-300' };
+    return { label: 'Pressão Elevada / Consulte seu médico', color: 'text-red-800 dark:text-red-300 bg-red-100 dark:bg-red-950/70 border-red-300 dark:border-red-700' };
   };
 
   const getGlucoseStatus = () => {
@@ -156,17 +156,17 @@ export const RecordHealthMeasurementModal: React.FC<RecordHealthMeasurementModal
     if (!val) return null;
     if (glucoseTiming === 'jejum') {
       if (val >= 70 && val <= 99) {
-        return { label: 'Glicemia Normal em Jejum', color: 'text-emerald-700 bg-emerald-100 dark:bg-emerald-950/70 border-emerald-300' };
+        return { label: 'Glicemia Normal em Jejum', color: 'text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/70 border-emerald-300 dark:border-emerald-700' };
       }
       if (val >= 100 && val <= 125) {
-        return { label: 'Glicemia Alterada / Pré-diabetes', color: 'text-amber-800 bg-amber-100 dark:bg-amber-950/70 border-amber-300' };
+        return { label: 'Glicemia Alterada / Pré-diabetes', color: 'text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/70 border-amber-300 dark:border-amber-700' };
       }
-      return { label: 'Glicemia Elevada / Atenção', color: 'text-red-800 bg-red-100 dark:bg-red-950/70 border-red-300' };
+      return { label: 'Glicemia Elevada / Atenção', color: 'text-red-800 dark:text-red-300 bg-red-100 dark:bg-red-950/70 border-red-300 dark:border-red-700' };
     }
     if (val < 140) {
-      return { label: 'Glicemia Normal pós-refeição', color: 'text-emerald-700 bg-emerald-100 dark:bg-emerald-950/70 border-emerald-300' };
+      return { label: 'Glicemia Normal pós-refeição', color: 'text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/70 border-emerald-300 dark:border-emerald-700' };
     }
-    return { label: 'Glicemia Elevada pós-refeição', color: 'text-amber-800 bg-amber-100 dark:bg-amber-950/70 border-amber-300' };
+    return { label: 'Glicemia Elevada pós-refeição', color: 'text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/70 border-amber-300 dark:border-amber-700' };
   };
 
   const pressureStatus = getPressureStatus();
@@ -214,7 +214,7 @@ export const RecordHealthMeasurementModal: React.FC<RecordHealthMeasurementModal
             <button
               type="button"
               onClick={onClose}
-              className="p-2 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 rounded-xl"
+              className="p-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 rounded-xl"
               aria-label="Fechar janela"
             >
               <X className="w-6 h-6" />
